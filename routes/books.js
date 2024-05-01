@@ -65,20 +65,33 @@ router.post('/', (req, res) => {
  * @desc update a book
  */
 
-router.put('/:id', (req, res)=>{
+router.put('/:id', (req, res) => {
     const { error } = validateUpdateBooks(req.body)
-    if(error){
-        return res.status(400).json({message:error.details[0].message})
+    if (error) {
+        return res.status(400).json({ message: error.details[0].message })
     }
-    const book=books.find(b=>b.id===parseInt(req.params.id))
-    if(book){
-        res.status(200).json({message:"book has been updated"})
-    }elsse{
-        res.status(404).json({message:"book not found"})
+    const book = books.find(b => b.id === parseInt(req.params.id))
+    if (book) {
+        res.status(200).json({ message: "book has been updated" })
+    } else {
+        res.status(404).json({ message: "book not found" })
     }
 })
 
 
+/**
+ * @desc delete a book
+ */
+
+router.delete('/:id', (req, res) => {
+
+    const book = books.find(b => b.id === parseInt(req.params.id))
+    if (book) {
+        res.status(200).json({ message: "book has been deleted" })
+    } else {
+        res.status(404).json({ message: "book not found" })
+    }
+})
 
 
 
