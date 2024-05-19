@@ -3,6 +3,12 @@ const router = express.Router()
 const joi = require("joi")
 const { Author } = require('../models/Author.model')
 
+/**
+ * @desc get all author
+ * @route /api/authors
+ * @method GET
+ * @access public
+ */
 router.get('/', async (req, res) => {
     try {
         const authorList = await Author.find()
@@ -17,23 +23,28 @@ router.get('/', async (req, res) => {
 
 
 /**
- * get author by id
+ * @desc get author by id
+ * @route /api/authors/:id
+ * @method GET
+ * @access public
  */
 
-router.get('/:id',async(req,res)=>{
-try {
-    
-    const authorID=await Author.findById(req.params.id)
-    res.status(200).json(authorID)
-} catch (error) {
-    res.status(500).json({message:"cannot get author by id"})
-    console.log(error);
-}
+router.get('/:id', async (req, res) => {
+    try {
+
+        const authorID = await Author.findById(req.params.id)
+        res.status(200).json(authorID)
+    } catch (error) {
+        res.status(500).json({ message: "cannot get author by id" })
+        console.log(error);
+    }
 })
 
 /**
- * @desc create new authour
- * 
+ * @desc create a new author
+ * @route /api/authors
+ * @method POST
+ * @access public
  */
 
 router.post('/', async (req, res) => {
@@ -58,19 +69,49 @@ router.post('/', async (req, res) => {
         res.status(500).json({ message: "error............." })
     }
 })
-router.put('/:id', (req, res) => {
+
+/**
+ * @desc update author
+ * @route /api/authors/:id
+ * @method UPDATE
+ * @access public
+ */
+router.put('/:id', async (req, res) => {
     const { error } = createUpdateAuthor(req.body);
     if (error) {
         return res.status(400).json({ message: error.details[0].message })
     }
-    const author = authors.find(b => b.id === parseInt(req.params.id))
-    if (author) {
-        res.status(200).json({ message: "author has been updated" })
-    } else {
-        res.status(404).json({ message: "author not found" })
+    try {
+        const author = await Author.findByIdAndUpdate(
+            req.params.id
+            , {
+                $set:{
+                    firstname: req.body.firstname,
+                    lastname: req.body.lastname,
+                    nationality: req.body.nationality,
+                    image: req.body.image
+                }
+            },
+            { new: true }
+        )//new is object function to get a new object updated
+
+        res.status(200).json(author)
+
+    } catch (error) {
+
+        console.log(error);
+        res.status(500)
+        json({ message: "can't update" })
+
     }
 })
 
+/**
+ * @desc delet author
+ * @route /api/authors/:id
+ * @method DELETE
+ * @access public
+ */
 router.delete('/:id', (req, res) => {
     const author = authors.find(b => b.id === parseInt(req.params.id))
     if (author) {
