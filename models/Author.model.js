@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-
+const joi = require("joi")
 
 const AuthorSchema = new mongoose.Schema({
     firstname: {
@@ -32,8 +32,45 @@ const AuthorSchema = new mongoose.Schema({
 }, {
     timestamps: true
 })
+
+/**
+ * @desc create New Author
+ * @route 
+ * @method function
+ * @access public
+ */
+function createNewAuthor(obj) {
+    const schema = joi.object({
+        firstname: joi.string().required(),
+        lastname: joi.string().required(),
+        nationality: joi.string().min(2).max(10),
+        image: joi.string()
+    })
+
+    return schema.validate(obj)
+}
+
+/**
+ * @desc valdation update Author
+ * @route 
+ * @method function
+ * @access public
+ */
+function createUpdateAuthor(obj) {
+    const schema = joi.object({
+        firstname: joi.string().required(),
+        lastname: joi.string().required(),
+        nationality: joi.string().min(2).max(10),
+        image: joi.string()
+    })
+
+    return schema.validate(obj)
+}
+
 const Author = mongoose.model("Author", AuthorSchema)
 
 module.exports = {
-    Author
+    Author,
+    createNewAuthor,
+    createUpdateAuthor
 }
