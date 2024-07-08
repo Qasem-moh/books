@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const booksPath = require("./routes/books");
 const authorsPath = require('./routes/authors')
 const authPath=require('./routes/auth')
+const usersPath=require("./routes/users")
 const user = require('./routes/User')
 const logger = require('./middlewares/logger')
 const dotenv = require("dotenv");
@@ -24,6 +25,7 @@ app.use(logger)
 app.use('/api/books', booksPath)
 app.use("/api/authors", authorsPath)
 app.use("/api/auth", authPath)
+app.use("/api/users", usersPath)
 
 // //Error Handel Middlware
 
