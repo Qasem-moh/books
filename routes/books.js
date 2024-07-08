@@ -1,120 +1,100 @@
 const express = require("express");
 const router = express.Router();
-const Joi = require("joi")
-const books = [
-    {
-        id: 1,
-        title: "book1",
-        author: "book1"
-    },
-    {
-        id: 2,
-        title: "book2",
-        author: "book1"
-    }, {
-        id: 3,
-        title: "book3",
-        author: "book1"
-    }, {
-        id: 4,
-        title: "book4",
-        author: "book1"
-    }, {
-        id: 5,
-        title: "book5",
-        author: "book1"
-    },
-]
-router.get('/', (req, res) => {
-    res.json("Welcome in first route")
-})
-// router.get('/book', (req, res) => {
-//     res.json(books)
-// })
+const asyncHandler = require("express-async-handler")
+const { Book, validateCreateBooks, validateUpdateBooks } = require('../models/Books.model')
 
-router.get('/:id', (req, res) => {
-    const book = books.find(b => b.id === parseInt(req.params.id))
-    if (book) {
-        res.status(200).json(book)
-    } else {
-        res.status(400).json({ message: 'book is not found' })
+/**
+ * @desc get all books 
+ * @route api/books/
+ * @methos get
+ * @status public
+ */
+router.get('/', asyncHandler(
+    async (req, res) => {
+        const books = await Book.find()
+        if (books) {
+            res.status(200).json(books)
+        } else {
+            res.status(500).json({ message: "can't get books" })
+        }
     }
-})
+))
 
-router.post('/', (req, res) => {
-
-    const { error } = validateCreateBooks(req.body)
-    if (error) {
-        return res.status(400).json({ message: error.details[0].message })
+router.get('/:id', asyncHandler(
+    async (req, res) => {
+        const book = await Book.findById(req.params.id)
+        if (book) {
+            res.status(200).json(book)
+        } else {
+            res.status(400).json({ message: 'book is not found' })
+        }
     }
-    const book =
-    {
-        id: books.length + 1,
-        title: req.body.title,
-        author: req.body.author,
-        descraption: req.body.descraption,
-        price: req.body.price,
-        cover: req.body.cover
+))
 
+router.post('/', asyncHandler(
+    async (req, res) => {
+
+        const { error } = validateCreateBooks(req.body)
+        if (error) {
+            return res.status(400).json({ message: error.details[0].message })
+        }
+        const book = new Book({
+            title: req.body.title,
+            author: req.body.author,
+            descraption: req.body.descraption,
+            price: req.body.price,
+            cover: req.body.cover
+        })
+        const result = await book.save()
+        res.status(200).json(result)
     }
-    books.push(book)
-    res.status(200).json(book)
-})
+))
 
 /**
  * @desc update a book
  */
 
-router.put('/:id', (req, res) => {
-    const { error } = validateUpdateBooks(req.body)
-    if (error) {
-        return res.status(400).json({ message: error.details[0].message })
+router.put('/:id', asyncHandler(
+    async (req, res) => {
+        const { error } = validateUpdateBooks(req.body)
+        if (error) {
+            return res.status(400).json({ message: error.details[0].message })
+        }
+        const updateBook = await
+            Book.findByIdAndUpdate(req.params.id, {
+                $set: {
+                    title: req.body.title,
+                    author: req.body.author,
+                    descraption: req.body.descraption,
+                    price: req.body.price,
+                    cover: req.body.cover
+                }
+            },
+                { new: true }
+            )
+        res.status(200).json(updateBook)
     }
-    const book = books.find(b => b.id === parseInt(req.params.id))
-    if (book) {
-        res.status(200).json({ message: "book has been updated" })
-    } else {
-        res.status(404).json({ message: "book not found" })
-    }
-})
+))
 
 
 /**
  * @desc delete a book
  */
+// books.find(b => b.id === parseInt(req.params.id))
+router.delete('/:id', asyncHandler(
+    async (req, res) => {
 
-router.delete('/:id', (req, res) => {
-
-    const book = books.find(b => b.id === parseInt(req.params.id))
-    if (book) {
-        res.status(200).json({ message: "book has been deleted" })
-    } else {
-        res.status(404).json({ message: "book not found" })
+        const book = await Book.findById(req.params.id)
+        if (book) {
+            await Book.findByIdAndDelete(req.params.id)
+            res.status(200).json({ message: "book has been deleted" })
+        } else {
+            res.status(404).json({ message: "book not found" })
+        }
     }
-})
+))
 
 
 
-function validateCreateBooks(obj) {
-    const schema = Joi.object({
-        title: Joi.string().trim().min(5).max(30).required(),
-        author: Joi.string().min(5).max(30).required(),
-        descraption: Joi.string().min(5).max(30).required(),
-        price: Joi.number().min(5).max(30).required(),
-        cover: Joi.string().min(5).max(30).required(),
 
-    })
-    return schema.validate(obj)
-}
-function validateUpdateBooks(obj) {
-    const schema = Joi.object({
-        title: Joi.string().trim().min(5).max(30),
-        author: Joi.string().min(5).max(30),
-        descraption: Joi.string().min(5).max(30),
-        price: Joi.number().min(5).max(30),
-        cover: Joi.string().min(5).max(30),
-
-    })
-    return schema.validate(obj)
-}
 module.exports = router
