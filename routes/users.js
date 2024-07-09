@@ -4,14 +4,14 @@ const bcrypt = require("bcryptjs")
 const jwt=require("jsonwebtoken")
 const asyncHandler = require("express-async-handler")
 const {User,validateUpdateUser}=require('../models/User')
-
+const {verfiyToken}=require("../middlewares/verfiyToken")
 /**
  * @desc update user
  * @route /api/auth/register
  * @method PUT
  * @access private
  */
-router.put("/:id",asyncHandler(async(req,res)=>{
+router.put("/:id",verfiyToken,asyncHandler(async(req,res)=>{
 const {error}=validateUpdateUser(req.body)
 if(error){
     res.status(400).json({message:error.details[0].message})
